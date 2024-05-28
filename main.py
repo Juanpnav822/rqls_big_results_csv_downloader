@@ -45,30 +45,34 @@ def status_of_report(status_url):
 def download_csv_report_from_rql(report_url):
     url="https://api4.prismacloud.io{}".format(report_url)
     headers={
-        'Accept': 'text/csv; charset=UTF-8',
+        'Accept': 'text/csv',
         'x-redlock-auth': token()
     }
 
     response=requests.request("GET",url,headers=headers)
-    response=response.text
+    response=response.content
     return response
 
-rql="""config from cloud.resource where resource.status = Active AND cloud.type = 'aws'"""
-reports_urls=search_async(rql)
-status_url=reports_urls['statusUrl']
-download_url=reports_urls['downloadUrl']
+def handler():
+    rql="""config from cloud.resource where resource.status = Active AND cloud.type = 'aws'"""
+    reports_urls=search_async(rql)
+    status_url=reports_urls['statusUrl']
+    download_url=reports_urls['downloadUrl']
 
-status=status_of_report(status_url)
-status=status['status']
-
-while status!="COMPLETED":
     status=status_of_report(status_url)
     status=status['status']
     print(status)
-    time.sleep(30)
 
-rql_results=download_csv_report_from_rql(download_url)
+    while status!="COMPLETED":
+        status=status_of_report(status_url)
+        status=status['status']
+    
+    print(status)
 
-with open("my_data.csv", "w", newline="") as csvfile:
-  writer = csv.writer(csvfile)
-  writer.writerow([rql_results])
+    rql_results=download_csv_report_from_rql(download_url)
+
+    with open("my_data.csv", "w", encoding="utf-8") as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow([rql_results])
+
+handler()
