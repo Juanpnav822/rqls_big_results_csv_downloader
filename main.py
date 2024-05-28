@@ -1,4 +1,5 @@
-import os, json, requests, csv, time
+import os, json, requests, csv
+import pandas as pd
 
 ak= os.environ.get("ACCESS_KEY")
 secret = os.environ.get("SECRET")
@@ -45,7 +46,7 @@ def status_of_report(status_url):
 def download_csv_report_from_rql(report_url):
     url="https://api4.prismacloud.io{}".format(report_url)
     headers={
-        'Accept': 'text/csv',
+        'Accept': 'text/csv; charset=UTF-8',
         'x-redlock-auth': token()
     }
 
@@ -69,7 +70,8 @@ def handler():
     
     print(status)
 
-    rql_results=download_csv_report_from_rql(download_url)
+    rql_results = download_csv_report_from_rql(download_url)
+    print(rql_results)
 
     with open("my_data.csv", "w", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile)
